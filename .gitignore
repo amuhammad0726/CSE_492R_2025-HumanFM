@@ -1,4 +1,1 @@
-.*
-!/.gitignore
-!/.gitlab-ci.yml
-node_modules
+node_modules/
