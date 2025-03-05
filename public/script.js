@@ -32,10 +32,8 @@
   function startSimulation() {
     id("start-btn").disabled = true;
     simulationTimerId = setInterval(function() {
-      console.log("Starting simulation interval.");
       let randDelay = (Math.floor(Math.random() * 3 + 1)) * 1000;
       setTimeout(async function() {
-        console.log("Fetching simulation data.");
         await fetchClassData();
       }, randDelay)
     }, 5000);
@@ -47,14 +45,11 @@
    */
   function stopSimulation() {
     id("start-btn").disabled = false;
-    console.log(simulationTimerId);
-    console.log(deletionTimerId);
     if (simulationTimerId) {
       clearInterval(simulationTimerId);
       clearInterval(deletionTimerId);
       simulationTimerId = null;
       deletionTimerId = null;
-      console.log("Simulation stopped.");
     }
   }
 
@@ -75,11 +70,9 @@
    */
   function removeRandomClass() {
     deletionTimerId = setInterval(function() {
-      console.log("Starting simulation deletion interval.");
       let randDelay = (Math.floor(Math.random() * 15 + 10)) * 1000;
 
       setTimeout(async function() {
-        console.log("Starting simulation deletion timeout.");
         let totalChildren = id("class-ctnr").children.length - 1;
         if (totalChildren >= 0 && totalChildren < id("class-ctnr").children.length) {
           let randIndex = Math.floor(Math.random() * totalChildren);
@@ -160,7 +153,6 @@
       let updateStat = await fetch(LEVEL_DATA_URL, {method: "POST", body: classData});
       await statusCheck(updateStat);
       let updateStatData = await updateStat.text();
-      console.log(updateStatData);
     } catch (err) {
       handleError(err);
     }
