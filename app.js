@@ -14,67 +14,90 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(multer().none());
 
-// Create a new socket and connect to C++ server running on port 4000.
-const client = new net.Socket();
-client.connect(4000, '127.0.0.1', () => {
-    console.log('Connected to C++ server!');
-});
+// // Temporary global variables to handle incoming C++ server data.
+// let activeClasses = [];
+// let soundLevels = [];
 
-// Handle incoming data from the server.
-client.on('data', (data) => {
-  let activeClasses = [];
-  let soundLevels = [];
+// // Create a new socket and connect to C++ server running on port 4000.
+// const client = new net.Socket();
+// client.connect(4000, '127.0.0.1', () => {
+//     console.log('Connected to C++ server!');
+// });
 
-  // Read data related to active classes.
-  for (let i = 0; i < 20; i++) {
-      activeClasses.push(data.readInt32LE(4 + i * 4));
-  }
+// // Handle incoming data from the server.
+// client.on('data', (data) => {
+//   let recClasses = [];
+//   let recSounds = [];
 
-  // Read data related to sound levels for each class.
-  let offset = 4 + 20 * 4;
-  for (let i = 0; i < 20; i++) {
-      soundLevels.push(data.readFloatLE(offset + i * 4));
-  }
+//   // Read data related to active classes.
+//   for (let i = 0; i < 20; i++) {
+//     recClasses.push(data.readInt32LE(4 + i * 4));
+//   }
 
-  console.log("Received activeClasses:", activeClasses);
-  console.log("Received soundLevels:", soundLevels);
+//   // Read data related to sound levels for each class.
+//   let offset = 4 + 20 * 4;
+//   for (let i = 0; i < 20; i++) {
+//     recSounds.push(data.readFloatLE(offset + i * 4));
+//   }
 
-  // Prepare buffer for sending updated data.
-  let buffer = Buffer.alloc(164);
+//   activeClasses = recClasses;
+//   soundLevels = recSounds;
 
-  // Writing our active classes to the buffer and introducing
-  // variable sound data.
-  for (let i = 0; i < 20; i++) {
-    buffer.writeInt32LE(activeClasses[i], 4 + i * 4);
-  }
+//   console.log("Received activeClasses:", recClasses);
+//   console.log("Received soundLevels:", recSounds);
+// });
 
-  for (let i = 0; i < 20; i++) {
-    if (activeClasses[i] == 1) {
-      let randFloat = Math.round(Math.random() * 100) / 100;
-      buffer.writeFloatLE(parseFloat(randFloat), offset + i * 4);
-    } else {
-      buffer.writeFloatLE(soundLevels[i], offset + i * 4);
-    }
-  }
+// // Temporary function to handle sending data to the server.
+// function sendClientData() {
+//   // Prepare buffer for sending updated data.
+//   let buffer = Buffer.alloc(164);
 
-  // Simulate termination condition.
-  if (Math.random() < 0.1) {
-      buffer.writeInt32LE(1, 0);
-      console.log("Sending termination signal...");
-  }
+//   // Writing our active classes to the buffer and introducing
+//   // variable sound data.
+//   for (let i = 0; i < 20; i++) {
+//     buffer.writeInt32LE(activeClasses[i], 4 + i * 4);
+//   }
 
-  client.write(buffer);
-});
+//   // Only modifying the active classes.
+//   let offset = 4 + 20 * 4;
+//   for (let i = 0; i < 20; i++) {
+//     if (activeClasses[i] == 1) {
+//       let randFloat = Math.round(Math.random() * 100) / 100;
+//       buffer.writeFloatLE(parseFloat(randFloat), offset + i * 4);
+//     } else {
+//       buffer.writeFloatLE(soundLevels[i], offset + i * 4);
+//     }
+//   }
 
-// Handle errors.
-client.on("error", (err) => {
-  console.error("Socket error:", err.message);
-});
+//   // Simulate termination condition.
+//   if (Math.random() < 0.1) {
+//       buffer.writeInt32LE(1, 0);
+//       console.log("Sending termination signal...");
+//       return -1;
+//   }
 
-// Handle connection close.
-client.on('close', () => {
-    console.log('Connection closed.');
-});
+//   client.write(buffer);
+//   return 0;
+// }
+
+// // Call the send function under a time interval.
+// let intervalId = setInterval(() => {
+//   console.log("Attempting to send server data.");
+//   let termStatus = sendClientData();
+//   if (termStatus == -1) {
+//     clearInterval(intervalId);
+//   }
+// }, 10000);
+
+// // Handle errors.
+// client.on("error", (err) => {
+//   console.error("Socket error:", err.message);
+// });
+
+// // Handle connection close.
+// client.on('close', () => {
+//     console.log('Connection closed.');
+// });
 
 // This function extracts data related to the classes from the database.
 app.get("/HumanFM/classes", async function(req, res) {
@@ -111,6 +134,21 @@ app.post("/HumanFM/classes/update", async function(req, res) {
 
   }
 });
+
+// This function presents the detected audio from the ML model based on the most
+// recent live audio chuck from the user.
+app.post("/HumanFM/classify", (req, res) => {
+  try {
+    if (req.body) {
+      console.log("Received class level: " + req.body.class);
+      res.status(200).send("success");
+    } else {
+      res.status(400).send("error");
+    }
+  } catch (err) {
+
+  }
+})
 
 /**
  * Establishes a database connection to the database and returns the database object.

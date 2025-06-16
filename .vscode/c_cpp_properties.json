@@ -4,7 +4,11 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/Library/Developer/CommandLineTools/usr/include"
+                "/Library/Developer/CommandLineTools/usr/include",
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk/System/Library/Frameworks/AudioToolbox.framework/Versions/A/Headers",
+                "/opt/homebrew/include/gstreamer-1.0",
+                "/opt/homebrew/include/glib-2.0",
+                "/opt/homebrew/lib/glib-2.0/include"
             ],
             "defines": [],
             "macFrameworkPath": [
